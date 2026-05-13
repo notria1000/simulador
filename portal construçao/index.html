@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Guia Urbano - AR PRO 2.0</title>
+    
+    <!-- BIBLIOTECAS OFICIAIS DE REPRODUÇÃO WEB AR -->
+    <script src="aframe.io"></script>
+    <script src="githack.com"></script>
+    
+    <!-- Ícones e Estilo -->
+    <link rel="stylesheet" href="cloudflare.com">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+
+    <!-- Tela de Bloqueio/Login -->
+    <div id="bloqueio" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div class="login-card" style="background: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-width: 320px; width: 90%;">
+            <i class="fas fa-lock-open" style="font-size: 2.5rem; color: #3b82f6; margin-bottom: 15px; display: block;"></i>
+            <h3 style="margin:0 0 10px; color: #1e293b; font-family: sans-serif;">Simulador WebAR</h3>
+            <p style="font-size: 11px; color:#64748b; margin-bottom: 20px; font-family: sans-serif;">Use sua senha do plano Guia Urbano.</p>
+            <input type="number" id="senhaInput" placeholder="Digite a Senha" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #cbd5e1; text-align: center; font-size: 16px; box-sizing: border-box;">
+            <button onclick="validar()" style="width: 100%; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: sans-serif;">ACESSAR AGORA</button>
+            <p style="font-size:10px; color:#94a3b8; margin-top:15px; font-family: sans-serif;">Teste: 123</p>
+        </div>
+    </div>
+
+    <!-- Interface do Aplicativo (Inicia oculta) -->
+    <div id="app-interface" style="display: none; font-family: sans-serif;">
+        <header id="main-header" style="position: fixed; top: 0; left: 0; width: 100%; background: #0f172a; color: white; padding: 12px; text-align: center; z-index: 5000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); box-sizing: border-box;">
+            <b>GUIA URBANO</b> <span style="font-size:0.7rem; color: #3b82f6;">| CONSTRUÇÃO</span>
+        </header>
+
+        <!-- Painel de Controle Inferior -->
+        <div class="control-panel" id="main-panel" style="position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95); padding: 20px; border-radius: 20px 20px 0 0; z-index: 5000; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3); box-sizing: border-box;">
+            <div class="calc-area" style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+                <input type="number" id="largura" class="calc-input" placeholder="L (m)" oninput="calcularM2()" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #475569; background: #1e293b; color: white; text-align: center; font-size: 14px;">
+                <input type="number" id="altura" class="calc-input" placeholder="A (m)" oninput="calcularM2()" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #475569; background: #1e293b; color: white; text-align: center; font-size: 14px;">
+                <div class="calc-result" id="resultadoM2" style="flex: 1; color: #3b82f6; font-weight: bold; text-align: center; font-size: 1.2rem;">0.00 m²</div>
+            </div>
+
+            <div class="tool-selector" style="display: flex; gap: 10px;">
+                <button class="tool-btn" id="btn-piso" onclick="setMode('piso', this)" style="flex: 1; padding: 10px; background: #1e293b; color: white; border: 2px solid #3b82f6; border-radius: 6px; font-weight: bold; cursor: pointer;">PISO</button>
+                <button class="tool-btn" onclick="setMode('parede', this)" style="flex: 1; padding: 10px; background: #1e293b; color: #94a3b8; border: 1px solid #475569; border-radius: 6px; font-weight: bold; cursor: pointer;">PAREDE</button>
+                <button class="tool-btn" onclick="setMode('revestimento', this)" style="flex: 1; padding: 10px; background: #1e293b; color: #94a3b8; border: 1px solid #475569; border-radius: 6px; font-weight: bold; cursor: pointer;">REVESTIR</button>
+            </div>
+
+            <div class="option-scroller" id="container-opcoes" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;"></div>
+
+            <a href="#" onclick="enviarWhats()" class="btn-whats" style="background: #25d366; color: white; text-align: center; padding: 12px; border-radius: 6px; font-weight: bold; text-decoration: none; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <i class="fab fa-whatsapp"></i> SOLICITAR ORÇAMENTO
+            </a>
+        </div>
+    </div>
+
+    <!-- CENA DE REALIDADE AUMENTADA -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;" vr-mode-ui="enabled: false">
+        <a-marker preset="hiro">
+            <a-plane id="obj-piso" position="0 0 0" rotation="-90 0 0" width="3" height="3" color="#e3d5ca" opacity="0.85"></a-plane>
+            <a-plane id="obj-parede" position="0 1.5 -1.5" rotation="0 0 0" width="3" height="3" color="#cbd5e1" visible="false"></a-plane>
+        </a-marker>
+        
+    </a-scene>
+
+    <!-- Link para o JS Externo -->
+    <script src="script.js"></script>
+</body>
+</html>
